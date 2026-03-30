@@ -5,6 +5,7 @@ import { prisma } from './prisma';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -24,7 +25,15 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = (user as any).role;
+      if (user) {
+        token.role = (user as any).role;
+        return token;
+      }
+
+      if (token.sub && !token.role) {
+        const dbUser = await prisma.user.findUnique({ where: { id: token.sub } });
+        token.role = dbUser?.role;
+      }
       return token;
     },
     async session({ session, token }) {

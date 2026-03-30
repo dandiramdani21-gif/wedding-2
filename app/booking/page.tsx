@@ -1,22 +1,32 @@
 import { prisma } from '@/lib/prisma';
-import { formatRupiah } from '@/lib/utils';
+import { BookingForm } from '@/components/booking-form';
 
-export default async function BookingPage({ searchParams }: { searchParams: { packageId?: string } }) {
-  const packages = await prisma.package.findMany({ include: { items: true } });
+export default async function BookingPage() {
+  const [packages, locked] = await Promise.all([
+    prisma.package.findMany({ include: { items: true } }),
+    prisma.booking.findMany({
+      where: {
+        OR: [
+          { status: 'CONFIRMED' },
+          { transactions: { some: { transactionType: 'DP', status: 'PAID' } } }
+        ]
+      },
+      select: { weddingDate: true }
+    })
+  ]);
+
+  const normalized = packages.map((x) => ({
+    ...x,
+    total: x.items.reduce((acc, i) => acc + i.totalPrice, 0)
+  }));
 
   return (
     <main className="mx-auto max-w-lg px-4 py-10">
       <h1 className="mb-5 text-2xl font-semibold">Booking</h1>
-      <form action="/api/bookings" method="POST" className="card space-y-3 p-5">
-        <select name="packageId" defaultValue={searchParams.packageId} className="w-full rounded-lg border p-2" required>
-          <option value="">Pilih paket</option>
-          {packages.map((pkg) => (
-            <option key={pkg.id} value={pkg.id}>{pkg.name} - {formatRupiah(pkg.items.reduce((acc: number, item) => acc + item.totalPrice, 0))}</option>
-          ))}
-        </select>
-        <input type="date" name="weddingDate" required className="w-full rounded-lg border p-2" />
-        <button className="w-full rounded-lg bg-rose-600 p-2 text-white">Buat Booking (DP)</button>
-      </form>
+      <BookingForm
+        packages={normalized}
+        unavailableDates={locked.map((x) => x.weddingDate.toISOString().slice(0, 10))}
+      />
     </main>
   );
 }

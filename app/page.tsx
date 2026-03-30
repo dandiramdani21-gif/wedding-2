@@ -6,20 +6,28 @@ export default async function HomePage() {
 
   return (
     <main>
-      <section className="bg-wedding bg-cover bg-center py-24 text-white">
+      <section className="bg-wedding bg-cover bg-center py-28 text-white">
         <div className="mx-auto max-w-6xl px-4">
-          <h1 className="text-4xl md:text-5xl font-bold">Booking Dekorasi Pernikahan</h1>
-          <p className="mt-4 max-w-2xl text-white/90">Desain minimalis modern untuk hari bahagia Anda. Pilih paket, tentukan tanggal, bayar DP/pelunasan online via Midtrans.</p>
-          <div className="mt-6 flex gap-3">
-            <a href="/register" className="rounded-xl bg-white px-4 py-2 text-slate-900">Daftar</a>
-            <a href="/login" className="rounded-xl border border-white px-4 py-2">Login</a>
+          <div className="max-w-3xl">
+            <p className="mb-3 text-sm uppercase tracking-[0.2em] text-white/80">Wedding Decoration</p>
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">Welcome to Wedding Booking Experience</h1>
+            <p className="mt-4 text-lg text-white/90">Pilih paket dekorasi, booking tanggal resepsi, bayar DP dan pelunasan online dengan pengalaman seperti e-commerce modern.</p>
+            <div className="mt-8 flex gap-3">
+              <a href="#packages" className="rounded-xl bg-white px-5 py-3 text-slate-900">Lihat Paket</a>
+              <a href="/booking" className="rounded-xl border border-white px-5 py-3">Mulai Booking</a>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="mb-6 text-2xl font-semibold">Paket Dekorasi</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+      <section id="packages" className="mx-auto max-w-6xl px-4 py-16">
+        <div className="mb-6 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-3xl font-semibold">Paket Dekorasi</h2>
+            <p className="mt-1 text-slate-600">Total harga paket dihitung otomatis dari item paket.</p>
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {packages.map((pkg) => (
             <PackageCard key={pkg.id} pkg={pkg} />
           ))}

@@ -8,7 +8,7 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@gmail.com' },
-    update: {},
+    update: { role: UserRole.ADMIN },
     create: {
       name: 'Super Admin',
       email: 'admin@gmail.com',
@@ -26,6 +26,24 @@ async function main() {
       userId: adminUser.id
     }
   });
+
+  const pkgCount = await prisma.package.count();
+  if (pkgCount === 0) {
+    await prisma.package.create({
+      data: {
+        name: 'Paket Silver',
+        description: 'Dekorasi basic pelaminan + aisle + lighting.',
+        imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1600&auto=format&fit=crop',
+        items: {
+          create: [
+            { itemName: 'Backdrop Pelaminan', quantity: 1, unitPrice: 4500000, totalPrice: 4500000 },
+            { itemName: 'Dekor Aisle', quantity: 1, unitPrice: 2500000, totalPrice: 2500000 },
+            { itemName: 'Lighting', quantity: 1, unitPrice: 1500000, totalPrice: 1500000 }
+          ]
+        }
+      }
+    });
+  }
 }
 
 main().finally(async () => prisma.$disconnect());

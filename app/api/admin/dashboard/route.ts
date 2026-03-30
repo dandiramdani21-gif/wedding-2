@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/api-auth';
 
 export async function GET(req: Request) {
+  const admin = await requireAdminApi();
+  if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
   const url = new URL(req.url);
   const from = url.searchParams.get('from');
   const to = url.searchParams.get('to');
 
-  const where = from && to
-    ? { createdAt: { gte: new Date(from), lte: new Date(to) } }
-    : {};
+  const where = from && to ? { createdAt: { gte: new Date(from), lte: new Date(`${to}T23:59:59`) } } : {};
 
   const rows = await prisma.transaction.findMany({
     where,
@@ -18,14 +20,7 @@ export async function GET(req: Request) {
   });
 
   if (url.searchParams.get('download') === 'excel') {
-    const data = rows.map((r) => ({
-      orderId: r.orderId,
-      user: r.user.name,
-      package: r.booking.package.name,
-      amount: r.amount,
-      status: r.status,
-      date: r.createdAt.toISOString()
-    }));
+    const data = rows.map((r) => ({ orderId: r.orderId, user: r.user.name, package: r.booking.package.name, amount: r.amount, status: r.status, date: r.createdAt.toISOString() }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, 'Report');

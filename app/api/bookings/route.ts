@@ -15,10 +15,17 @@ export async function POST(req: Request) {
   const pkg = await prisma.package.findUnique({ where: { id: packageId }, include: { items: true } });
   if (!pkg) return new Response('Paket tidak ditemukan', { status: 404 });
 
-  const conflict = await prisma.booking.findFirst({
-    where: { weddingDate, status: { in: ['PENDING', 'CONFIRMED'] } }
+  const lockedDate = await prisma.booking.findFirst({
+    where: {
+      weddingDate,
+      OR: [
+        { status: 'CONFIRMED' },
+        { transactions: { some: { transactionType: 'DP', status: 'PAID' } } }
+      ]
+    }
   });
-  if (conflict) return new Response('Tanggal sudah dibooking, silakan pilih tanggal lain', { status: 400 });
+
+  if (lockedDate) return new Response('Tanggal sudah dibooking dan DP sudah dibayar. Pilih tanggal lain.', { status: 400 });
 
   const totalAmount = pkg.items.reduce((a, b) => a + b.totalPrice, 0);
   const dpAmount = Math.round(totalAmount * 0.3);
