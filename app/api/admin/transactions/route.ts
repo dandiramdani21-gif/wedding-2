@@ -1,0 +1,29 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const status = url.searchParams.get('status') as any;
+  const from = url.searchParams.get('from');
+  const to = url.searchParams.get('to');
+
+  const rows = await prisma.transaction.findMany({
+    where: {
+      ...(status ? { status } : {}),
+      ...(from && to ? { createdAt: { gte: new Date(from), lte: new Date(to) } } : {})
+    },
+    include: { user: true, booking: { include: { package: true } } },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return NextResponse.json({ rows });
+}
+
+export async function PATCH(req: Request) {
+  const body = await req.json();
+  const updated = await prisma.transaction.update({
+    where: { id: body.id },
+    data: { status: body.status }
+  });
+  return NextResponse.json({ updated });
+}
