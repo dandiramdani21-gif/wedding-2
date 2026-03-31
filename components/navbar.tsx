@@ -9,7 +9,7 @@ export async function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="font-semibold text-slate-900">Wedding Decor</Link>
+        <Link href="/" className="font-semibold text-slate-900">Seven Party Decor</Link>
         <nav className="flex items-center gap-2 text-sm">
           <Link href="/" className="rounded-lg px-3 py-2 hover:bg-slate-100">Home</Link>
           {user && <Link href="/booking" className="rounded-lg px-3 py-2 hover:bg-slate-100">Booking</Link>}
