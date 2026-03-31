@@ -13,25 +13,7 @@ export async function POST(req: Request) {
   const admin = await requireAdminApi();
   if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const ct = req.headers.get('content-type') || '';
-  let data: any = {};
-
-  if (ct.includes('application/json')) {
-    data = await req.json();
-  } else {
-    const form = await req.formData();
-    data = {
-      name: String(form.get('name')),
-      description: String(form.get('description') || ''),
-      imageUrl: String(form.get('imageUrl') || ''),
-      items: [{
-        itemName: String(form.get('itemName')),
-        quantity: Number(form.get('quantity')),
-        unitPrice: Number(form.get('unitPrice'))
-      }]
-    };
-  }
-
+  const data = await req.json();
   const pkg = await prisma.package.create({
     data: {
       name: data.name,
@@ -49,6 +31,45 @@ export async function POST(req: Request) {
     include: { items: true }
   });
 
-  if (ct.includes('application/json')) return NextResponse.json({ pkg });
-  return NextResponse.redirect(new URL('/admin/packages', req.url));
+  return NextResponse.json({ pkg });
+}
+
+export async function PATCH(req: Request) {
+  const admin = await requireAdminApi();
+  if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  const data = await req.json();
+  if (!data.id) return NextResponse.json({ message: 'id required' }, { status: 400 });
+
+  const updated = await prisma.package.update({
+    where: { id: data.id },
+    data: {
+      name: data.name,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      items: {
+        deleteMany: {},
+        create: (data.items || []).map((item: any) => ({
+          itemName: item.itemName,
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+          totalPrice: Number(item.quantity) * Number(item.unitPrice)
+        }))
+      }
+    },
+    include: { items: true }
+  });
+
+  return NextResponse.json({ updated });
+}
+
+export async function DELETE(req: Request) {
+  const admin = await requireAdminApi();
+  if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  const id = new URL(req.url).searchParams.get('id');
+  if (!id) return NextResponse.json({ message: 'id required' }, { status: 400 });
+
+  await prisma.package.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
 }
