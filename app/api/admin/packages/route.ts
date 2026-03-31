@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminApi } from '@/lib/api-auth';
+import { getPagination } from '@/lib/pagination';
 
-export async function GET() {
+export async function GET(req: Request) {
   const admin = await requireAdminApi();
   if (!admin) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  const rows = await prisma.package.findMany({ include: { items: true } });
-  return NextResponse.json({ rows });
+  const params = new URL(req.url).searchParams;
+  const { page, pageSize, skip, take } = getPagination(params);
+  const [rows, total] = await Promise.all([
+    prisma.package.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' }, skip, take }),
+    prisma.package.count()
+  ]);
+  return NextResponse.json({ rows, meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) } });
 }
 
 export async function POST(req: Request) {

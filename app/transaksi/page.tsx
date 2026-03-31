@@ -1,14 +1,23 @@
 import { requireAuth } from '@/lib/rbac';
 import { prisma } from '@/lib/prisma';
 import { formatRupiah } from '@/lib/utils';
+import { getPagination } from '@/lib/pagination';
+import { PaginationLinks } from '@/components/pagination-links';
 
-export default async function TransaksiPage() {
+export default async function TransaksiPage({ searchParams }: { searchParams: { page?: string; pageSize?: string } }) {
   const session = await requireAuth();
-  const rows = await prisma.transaction.findMany({
-    where: { userId: (session.user as any).id },
-    include: { booking: { include: { package: true } } },
-    orderBy: { createdAt: 'desc' }
-  });
+  const { page, pageSize, skip, take } = getPagination(searchParams);
+  const where = { userId: (session.user as any).id };
+  const [rows, total] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      include: { booking: { include: { package: true } } },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take
+    }),
+    prisma.transaction.count({ where })
+  ]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
@@ -23,6 +32,9 @@ export default async function TransaksiPage() {
             {row.status === 'PENDING' && <a href={`/api/midtrans/snap?transactionId=${row.id}`} className="rounded-lg bg-slate-900 px-3 py-2 text-white">Bayar</a>}
           </div>
         ))}
+      </div>
+      <div className="mt-4">
+        <PaginationLinks basePath="/transaksi" page={page} pageSize={pageSize} total={total} />
       </div>
     </main>
   );

@@ -1,7 +1,13 @@
 import { prisma } from '@/lib/prisma';
+import { getPagination } from '@/lib/pagination';
+import { PaginationLinks } from '@/components/pagination-links';
 
-export default async function AdminsPage() {
-  const rows = await prisma.admin.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+export default async function AdminsPage({ searchParams }: { searchParams: { page?: string; pageSize?: string } }) {
+  const { page, pageSize, skip, take } = getPagination(searchParams);
+  const [rows, total] = await Promise.all([
+    prisma.admin.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' }, skip, take }),
+    prisma.admin.count()
+  ]);
 
   return (
     <div className="space-y-5">
@@ -18,6 +24,7 @@ export default async function AdminsPage() {
       <div className="space-y-3">
         {rows.map((a) => <div key={a.id} className="card p-4"><p className="font-semibold">{a.user.name}</p><p className="text-sm text-slate-500">{a.user.email}</p></div>)}
       </div>
+      <PaginationLinks basePath="/admin/admins" page={page} pageSize={pageSize} total={total} />
     </div>
   );
 }

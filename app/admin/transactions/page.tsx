@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma';
 import { formatRupiah } from '@/lib/utils';
+import { getPagination } from '@/lib/pagination';
+import { PaginationLinks } from '@/components/pagination-links';
 
-export default async function TransactionsPage({ searchParams }: { searchParams: { status?: string; from?: string; to?: string } }) {
+export default async function TransactionsPage({ searchParams }: { searchParams: { status?: string; from?: string; to?: string; page?: string; pageSize?: string } }) {
+  const { page, pageSize, skip, take } = getPagination(searchParams);
   const where = {
     ...(searchParams.status ? { status: searchParams.status as any } : {}),
     ...(searchParams.from && searchParams.to
@@ -9,11 +12,16 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
       : {})
   };
 
-  const rows = await prisma.transaction.findMany({
-    where,
-    include: { user: true, booking: { include: { package: true } } },
-    orderBy: { createdAt: 'desc' }
-  });
+  const [rows, total] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      include: { user: true, booking: { include: { package: true } } },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take
+    }),
+    prisma.transaction.count({ where })
+  ]);
 
   return (
     <div className="space-y-5">
@@ -42,6 +50,13 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
           </tbody>
         </table>
       </div>
+      <PaginationLinks
+        basePath="/admin/transactions"
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        extra={{ status: searchParams.status, from: searchParams.from, to: searchParams.to }}
+      />
     </div>
   );
 }

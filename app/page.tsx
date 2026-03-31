@@ -1,8 +1,14 @@
 import { prisma } from '@/lib/prisma';
 import { PackageCard } from '@/components/package-card';
+import { getPagination } from '@/lib/pagination';
+import { PaginationLinks } from '@/components/pagination-links';
 
-export default async function HomePage() {
-  const packages = await prisma.package.findMany({ include: { items: true } });
+export default async function HomePage({ searchParams }: { searchParams: { page?: string; pageSize?: string } }) {
+  const { page, pageSize, skip, take } = getPagination(searchParams, 6);
+  const [packages, total] = await Promise.all([
+    prisma.package.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' }, skip, take }),
+    prisma.package.count()
+  ]);
 
   return (
     <main>
@@ -31,6 +37,9 @@ export default async function HomePage() {
           {packages.map((pkg) => (
             <PackageCard key={pkg.id} pkg={pkg} />
           ))}
+        </div>
+        <div className="mt-6">
+          <PaginationLinks basePath="/" page={page} pageSize={pageSize} total={total} />
         </div>
       </section>
     </main>
