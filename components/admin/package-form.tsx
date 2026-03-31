@@ -107,13 +107,6 @@ export function PackageForm({ initial = [] }: { initial?: Pkg[] }) {
           const total = items.reduce((acc, x) => acc + x.totalPrice, 0);
           return (
             <div key={pkg.id} className="card p-4">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold">{pkg.name}</h3>
-                <div className="flex gap-2">
-                  <button onClick={() => loadEdit(pkg)} className="rounded-md border px-2 py-1 text-xs font-semibold">EDIT</button>
-                  <button onClick={() => removePackage(pkg.id)} disabled={deletingId === pkg.id} className="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white disabled:opacity-60">{deletingId === pkg.id ? '...' : 'HAPUS'}</button>
-                </div>
-              </div>
               <p className="text-sm text-slate-500">{pkg.description}</p>
               <ul className="mt-2 list-disc pl-5 text-sm text-slate-600">
                 {items.map((x) => <li key={x.id}>{x.itemName} ({x.quantity}x) - {formatRupiah(x.totalPrice)}</li>)}
