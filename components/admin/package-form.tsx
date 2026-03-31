@@ -13,7 +13,7 @@ type Pkg = {
   items: Array<{ id: string; itemName: string; quantity: number; unitPrice: number; totalPrice: number }>;
 };
 
-export function PackageForm({ initial }: { initial: Pkg[] }) {
+export function PackageForm({ initial = [] }: { initial?: Pkg[] }) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -103,7 +103,8 @@ export function PackageForm({ initial }: { initial: Pkg[] }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         {initial.map((pkg) => {
-          const total = pkg.items.reduce((acc, x) => acc + x.totalPrice, 0);
+          const items = pkg.items || [];
+          const total = items.reduce((acc, x) => acc + x.totalPrice, 0);
           return (
             <div key={pkg.id} className="card p-4">
               <div className="flex items-start justify-between gap-2">
@@ -115,7 +116,7 @@ export function PackageForm({ initial }: { initial: Pkg[] }) {
               </div>
               <p className="text-sm text-slate-500">{pkg.description}</p>
               <ul className="mt-2 list-disc pl-5 text-sm text-slate-600">
-                {pkg.items.map((x) => <li key={x.id}>{x.itemName} ({x.quantity}x) - {formatRupiah(x.totalPrice)}</li>)}
+                {items.map((x) => <li key={x.id}>{x.itemName} ({x.quantity}x) - {formatRupiah(x.totalPrice)}</li>)}
               </ul>
               <p className="mt-2 font-semibold text-rose-600">Total: {formatRupiah(total)}</p>
               <div className="mt-3 flex gap-2">
