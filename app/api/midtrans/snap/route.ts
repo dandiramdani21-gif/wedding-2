@@ -21,7 +21,10 @@ export async function GET(req: Request) {
       first_name: trx.user.name,
       email: trx.user.email,
       phone: trx.user.phone
-    }
+    },
+    callbacks: {
+        finish: `http://localhost:3000/transaksi`,
+      }
   });
 
   await prisma.payment.upsert({
