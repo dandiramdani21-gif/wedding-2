@@ -15,8 +15,8 @@ export default async function HomePage({ searchParams }: { searchParams: { page?
       <section className="bg-wedding bg-cover bg-center py-28 text-white">
         <div className="mx-auto max-w-6xl px-4">
           <div className="max-w-3xl">
-            <p className="mb-3 text-sm uppercase tracking-[0.2em] text-white/80">Wedding Decoration</p>
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight">Welcome to Party Planner Bandung</h1>
+            <p className="mb-3 text-sm uppercase tracking-[0.2em] text-white/80">Seven Party Decor</p>
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">Selamat datang di Party Planner Bandung</h1>
             <p className="mt-4 text-lg text-white/90">Wujudkan dekorasi impian kamu bersama Seven Party Decor.</p>
             <div className="mt-8 flex gap-3">
               <a href="#packages" className="rounded-xl bg-white px-5 py-3 text-slate-900">Lihat Paket</a>

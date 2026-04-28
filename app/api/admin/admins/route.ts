@@ -17,10 +17,32 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const creator = await requireAdminApi();
-  if (!creator) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  if (!creator) {
+    return NextResponse.json(
+      { message: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
   const ct = req.headers.get('content-type') || '';
-  const body = ct.includes('application/json') ? await req.json() : Object.fromEntries((await req.formData()).entries());
+
+  const body = ct.includes('application/json')
+    ? await req.json()
+    : Object.fromEntries((await req.formData()).entries());
+
+  const creatorAdmin = await prisma.admin.findUnique({
+    where: {
+      userId: creator.id,
+    },
+  });
+
+  if (!creatorAdmin) {
+    return NextResponse.json(
+      { message: 'Admin profile not found' },
+      { status: 404 }
+    );
+  }
 
   const user = await prisma.user.create({
     data: {
@@ -29,12 +51,24 @@ export async function POST(req: Request) {
       passwordHash: await bcrypt.hash(String(body.password), 10),
       address: String(body.address || '-'),
       phone: String(body.phone || '-'),
-      role: 'ADMIN'
-    }
+      role: 'ADMIN',
+    },
   });
-  const admin = await prisma.admin.create({ data: { userId: user.id, createdById: creator.id } });
-  if (ct.includes('application/json')) return NextResponse.json({ admin });
-  return NextResponse.redirect(new URL('/admin/admins', req.url));
+
+  const admin = await prisma.admin.create({
+    data: {
+      userId: user.id,
+      createdById: creatorAdmin.id,
+    },
+  });
+
+  if (ct.includes('application/json')) {
+    return NextResponse.json({ admin });
+  }
+
+  return NextResponse.redirect(
+    new URL('/admin/admins', req.url)
+  );
 }
 
 export async function DELETE(req: Request) {

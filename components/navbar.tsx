@@ -11,9 +11,9 @@ export async function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="font-semibold text-slate-900">Seven Party Decor</Link>
         <nav className="flex items-center gap-2 text-sm">
-          <Link href="/" className="rounded-lg px-3 py-2 hover:bg-slate-100">Home</Link>
-          {user && <Link href="/booking" className="rounded-lg px-3 py-2 hover:bg-slate-100">Booking</Link>}
-          {user && <Link href="/transaksi" className="rounded-lg px-3 py-2 hover:bg-slate-100">Transaksi</Link>}
+          <Link href="/" className="rounded-lg px-3 py-2 hover:bg-slate-100">Halaman Utama</Link>
+          {user?.role === 'USER' && <Link href="/booking" className="rounded-lg px-3 py-2 hover:bg-slate-100">Pesanan</Link>}
+          {user?.role === 'USER' && <Link href="/transaksi" className="rounded-lg px-3 py-2 hover:bg-slate-100">Transaksi</Link>}
           {user?.role === 'ADMIN' && <Link href="/admin/dashboard" className="rounded-lg px-3 py-2 hover:bg-slate-100">Admin</Link>}
         </nav>
         <div className="flex items-center gap-2">
