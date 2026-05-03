@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       phone: trx.user.phone
     },
     callbacks: {
-        finish: `http://localhost:3000/transaksi`,
+        finish: `${process.env.BASE_URL}/thanks`
       }
   });
 
