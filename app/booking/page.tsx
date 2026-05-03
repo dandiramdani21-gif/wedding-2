@@ -1,9 +1,27 @@
 import { prisma } from '@/lib/prisma';
 import { BookingForm } from '@/components/booking-form';
+import { withPackageTotals } from '@/lib/package-data';
 
 export default async function BookingPage({ searchParams }: { searchParams: { packageId?: string } }) {
-  const [packages, locked] = await Promise.all([
-    prisma.package.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' } }),
+  const [rows, locked] = await Promise.all([
+    prisma.package.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        items: {
+          select: {
+            id: true,
+            itemName: true,
+            quantity: true,
+            unitPrice: true,
+            totalPrice: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    }),
     prisma.booking.findMany({
       where: {
         OR: [
@@ -14,11 +32,7 @@ export default async function BookingPage({ searchParams }: { searchParams: { pa
       select: { weddingDate: true }
     })
   ]);
-
-  const normalized = packages.map((x) => ({
-    ...x,
-    total: x.items.reduce((acc, i) => acc + i.totalPrice, 0)
-  }));
+  const packages = withPackageTotals(rows);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -27,7 +41,7 @@ export default async function BookingPage({ searchParams }: { searchParams: { pa
         <h1 className="text-3xl font-bold">Pilih Paket & Jadwal Resepsi Anda</h1>
       </div>
       <BookingForm
-        packages={normalized}
+        packages={packages}
         unavailableDates={locked.map((x) => x.weddingDate.toISOString().slice(0, 10))}
         initialPackageId={searchParams.packageId}
       />

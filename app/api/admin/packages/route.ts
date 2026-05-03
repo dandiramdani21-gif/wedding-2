@@ -9,7 +9,26 @@ export async function GET(req: Request) {
   const params = new URL(req.url).searchParams;
   const { page, pageSize, skip, take } = getPagination(params);
   const [rows, total] = await Promise.all([
-    prisma.package.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' }, skip, take }),
+    prisma.package.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        items: {
+          select: {
+            id: true,
+            itemName: true,
+            quantity: true,
+            unitPrice: true,
+            totalPrice: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take
+    }),
     prisma.package.count()
   ]);
   return NextResponse.json({ rows, meta: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) } });
@@ -34,7 +53,21 @@ export async function POST(req: Request) {
         }))
       }
     },
-    include: { items: true }
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      imageUrl: true,
+      items: {
+        select: {
+          id: true,
+          itemName: true,
+          quantity: true,
+          unitPrice: true,
+          totalPrice: true
+        }
+      }
+    }
   });
 
   return NextResponse.json({ pkg });
@@ -63,7 +96,21 @@ export async function PATCH(req: Request) {
         }))
       }
     },
-    include: { items: true }
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      imageUrl: true,
+      items: {
+        select: {
+          id: true,
+          itemName: true,
+          quantity: true,
+          unitPrice: true,
+          totalPrice: true
+        }
+      }
+    }
   });
 
   return NextResponse.json({ updated });

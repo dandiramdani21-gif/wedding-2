@@ -12,7 +12,17 @@ export async function POST(req: Request) {
   const packageId = String(form.get('packageId'));
   const weddingDate = new Date(String(form.get('weddingDate')));
 
-  const pkg = await prisma.package.findUnique({ where: { id: packageId }, include: { items: true } });
+  const pkg = await prisma.package.findUnique({
+    where: { id: packageId },
+    select: {
+      id: true,
+      items: {
+        select: {
+          totalPrice: true
+        }
+      }
+    }
+  });
   if (!pkg) return new Response('Paket tidak ditemukan', { status: 404 });
 
   const lockedDate = await prisma.booking.findFirst({

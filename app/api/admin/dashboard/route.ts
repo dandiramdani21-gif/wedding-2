@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
 import { prisma } from '@/lib/prisma';
 import { requireAdminApi } from '@/lib/api-auth';
 
@@ -15,11 +14,31 @@ export async function GET(req: Request) {
 
   const rows = await prisma.transaction.findMany({
     where,
-    include: { user: true, booking: { include: { package: true } } },
+    select: {
+      orderId: true,
+      amount: true,
+      status: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true
+        }
+      },
+      booking: {
+        select: {
+          package: {
+            select: {
+              name: true
+            }
+          }
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' }
   });
 
   if (url.searchParams.get('download') === 'excel') {
+    const XLSX = await import('xlsx');
     const data = rows.map((r) => ({ orderId: r.orderId, user: r.user.name, package: r.booking.package.name, amount: r.amount, status: r.status, date: r.createdAt.toISOString() }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(data);

@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { formatRupiah } from '@/lib/utils';
+import type { PackageSummary } from '@/lib/package-data';
 
 type Item = {
   itemName: string;
@@ -10,24 +12,10 @@ type Item = {
   unitPrice: number;
 };
 
-type Pkg = {
-  id: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  items: Array<{
-    id: string;
-    itemName: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-  }>;
-};
-
 export function PackageForm({
   initial = [],
 }: {
-  initial?: Pkg[];
+  initial?: PackageSummary[];
 }) {
   const router = useRouter();
 
@@ -94,7 +82,7 @@ export function PackageForm({
     setEditingId(null);
   }
 
-  function loadEdit(pkg: Pkg) {
+  function loadEdit(pkg: PackageSummary) {
     setEditingId(pkg.id);
 
     setName(pkg.name);
@@ -319,13 +307,13 @@ export function PackageForm({
             </label>
 
             {(imagePreview || imageUrl) && (
-              <div className="overflow-hidden rounded-3xl border border-neutral-200">
-                <img
-                  src={
-                    imagePreview || imageUrl
-                  }
+              <div className="relative h-64 overflow-hidden rounded-3xl border border-neutral-200">
+                <Image
+                  src={imagePreview || imageUrl}
                   alt="Preview"
-                  className="h-64 w-full object-cover"
+                  fill
+                  unoptimized
+                  className="object-cover"
                 />
               </div>
             )}
@@ -497,12 +485,6 @@ export function PackageForm({
         {initial.map((pkg) => {
           const items = pkg.items || [];
 
-          const total = items.reduce(
-            (acc, x) =>
-              acc + x.totalPrice,
-            0
-          );
-
           return (
             <div
               key={pkg.id}
@@ -514,9 +496,11 @@ export function PackageForm({
               "
             >
               {pkg.imageUrl && (
-                <img
+                <Image
                   src={pkg.imageUrl}
                   alt={pkg.name}
+                  width={1200}
+                  height={560}
                   className="h-56 w-full object-cover"
                 />
               )}
@@ -552,7 +536,7 @@ export function PackageForm({
 
                 <div className="mt-5 flex items-center justify-between">
                   <p className="text-lg font-bold text-neutral-900">
-                    {formatRupiah(total)}
+                    {formatRupiah(pkg.total)}
                   </p>
 
                   <div className="flex gap-2">

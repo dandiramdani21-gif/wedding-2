@@ -15,7 +15,27 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
   const [rows, total] = await Promise.all([
     prisma.transaction.findMany({
       where,
-      include: { user: true, booking: { include: { package: true } } },
+      select: {
+        id: true,
+        orderId: true,
+        transactionType: true,
+        amount: true,
+        status: true,
+        user: {
+          select: {
+            name: true
+          }
+        },
+        booking: {
+          select: {
+            package: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
       orderBy: { createdAt: 'desc' },
       skip,
       take

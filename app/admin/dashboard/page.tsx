@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { formatRupiah } from '@/lib/utils';
-import { RevenueChart, TransactionChart } from '@/components/admin/charts';
+import { DashboardCharts } from '@/components/admin/dashboard-charts';
 
 export default async function AdminDashboard({ searchParams }: { searchParams: { from?: string; to?: string } }) {
   const from = searchParams.from;
@@ -10,7 +10,15 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
   const [userCount, packageCount, transactions] = await Promise.all([
     prisma.user.count({ where: { role: 'USER' } }),
     prisma.package.count(),
-    prisma.transaction.findMany({ where, include: { booking: true }, orderBy: { createdAt: 'asc' } })
+    prisma.transaction.findMany({
+      where,
+      select: {
+        amount: true,
+        status: true,
+        createdAt: true
+      },
+      orderBy: { createdAt: 'asc' }
+    })
   ]);
 
   const revenue = transactions.filter((x) => x.status === 'PAID').reduce((acc, x) => acc + x.amount, 0);
@@ -43,11 +51,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: {
         <div className="card p-4"><p className="text-sm text-slate-500">Jumlah User</p><p className="text-2xl font-bold">{userCount}</p></div>
         <div className="card p-4"><p className="text-sm text-slate-500">Jumlah Paket</p><p className="text-2xl font-bold">{packageCount}</p></div>
       </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RevenueChart data={chartData} />
-        <TransactionChart data={chartData} />
-      </div>
+      <DashboardCharts data={chartData} />
     </div>
   );
 }

@@ -3,12 +3,22 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { formatRupiah } from '@/lib/utils';
+import type { PackageSummary } from '@/lib/package-data';
 
-export function BookingForm({ packages, unavailableDates, initialPackageId }: { packages: any[]; unavailableDates: string[]; initialPackageId?: string }) {
+export function BookingForm({
+  packages,
+  unavailableDates,
+  initialPackageId
+}: {
+  packages: PackageSummary[];
+  unavailableDates: string[];
+  initialPackageId?: string;
+}) {
   const [packageId, setPackageId] = useState(initialPackageId || packages[0]?.id || '');
   const [date, setDate] = useState('');
   const blocked = useMemo(() => new Set(unavailableDates), [unavailableDates]);
-  const selected = useMemo(() => packages.find((pkg) => pkg.id === packageId) || packages[0], [packages, packageId]);
+  const packageMap = useMemo(() => new Map(packages.map((pkg) => [pkg.id, pkg])), [packages]);
+  const selected = packageMap.get(packageId) || packages[0];
   const dpAmount = selected ? Math.round(selected.total * 0.3) : 0;
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -41,7 +51,7 @@ export function BookingForm({ packages, unavailableDates, initialPackageId }: { 
           <div>
             <p className="mb-2 text-sm font-semibold">Isi Paket</p>
             <ul className="space-y-1 text-sm text-slate-700">
-              {(selected?.items || []).map((item: any) => (
+              {(selected?.items || []).map((item) => (
                 <li key={item.id} className="flex justify-between gap-2">
                   <span>{item.itemName} ({item.quantity}x)</span>
                   <span className="font-medium">{formatRupiah(item.totalPrice)}</span>

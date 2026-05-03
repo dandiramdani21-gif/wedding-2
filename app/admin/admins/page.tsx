@@ -5,7 +5,20 @@ import { PaginationLinks } from '@/components/pagination-links';
 export default async function AdminsPage({ searchParams }: { searchParams: { page?: string; pageSize?: string } }) {
   const { page, pageSize, skip, take } = getPagination(searchParams);
   const [rows, total] = await Promise.all([
-    prisma.admin.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' }, skip, take }),
+    prisma.admin.findMany({
+      select: {
+        id: true,
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take
+    }),
     prisma.admin.count()
   ]);
 

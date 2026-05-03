@@ -1,17 +1,13 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { formatRupiah } from '@/lib/utils';
+import type { PackageSummary } from '@/lib/package-data';
 
 export function PackageCard({
   pkg,
 }: {
-  pkg: any;
+  pkg: PackageSummary;
 }) {
-  const total = pkg.items.reduce(
-    (acc: number, item: any) =>
-      acc + item.totalPrice,
-    0
-  );
-
   return (
     <div
       className="
@@ -124,11 +120,11 @@ export function PackageCard({
             </span>
 
             <span className="text-lg font-bold tracking-tight text-neutral-900">
-              {formatRupiah(total)}
+              {formatRupiah(pkg.total)}
             </span>
           </div>
 
-          <a
+          <Link
             href={`/booking?packageId=${pkg.id}`}
             className="
               inline-flex h-12 w-full items-center
@@ -141,7 +137,7 @@ export function PackageCard({
             "
           >
             Booking Sekarang
-          </a>
+          </Link>
         </div>
       </div>
     </div>
