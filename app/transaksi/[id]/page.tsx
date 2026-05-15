@@ -9,7 +9,8 @@ import { InvoiceActions } from '@/components/invoice-actions';
 function statusClasses(status: string) {
   if (status === 'PAID') return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
   if (status === 'PENDING') return 'bg-amber-100 text-amber-700 ring-amber-200';
-  return 'bg-rose-100 text-rose-700 ring-rose-200';
+  if (status === 'FAILED' || status === 'EXPIRED') return 'bg-rose-100 text-rose-700 ring-rose-200';
+  return 'bg-slate-100 text-slate-700 ring-slate-200';
 }
 
 export default async function TransactionDetailPage({ params }: { params: { id: string } }) {
@@ -79,13 +80,13 @@ export default async function TransactionDetailPage({ params }: { params: { id: 
         </Link>
 
         <div className="flex flex-wrap gap-3">
-          {transaction.status === 'PENDING' && (
+          {(transaction.status === 'PENDING' || transaction.status === 'FAILED' || transaction.status === 'EXPIRED') && (
             <Link
               href={`/api/midtrans/snap?transactionId=${transaction.id}`}
               className="inline-flex items-center gap-2 rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-500"
             >
               <Wallet className="h-4 w-4" />
-              Lanjut Bayar
+              Bayar Sekarang
             </Link>
           )}
           <InvoiceActions />

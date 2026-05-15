@@ -12,6 +12,11 @@ export async function GET(req: Request) {
   });
   if (!trx) return NextResponse.json({ message: 'Transaksi tidak ditemukan' }, { status: 404 });
 
+  // Check if transaction is still pending
+  if (trx.status !== 'PENDING') {
+    return NextResponse.redirect(new URL('/transaksi/' + id, req.url));
+  }
+
   const snapTx = await snap.createTransaction({
     transaction_details: {
       order_id: trx.orderId,
@@ -23,8 +28,14 @@ export async function GET(req: Request) {
       phone: trx.user.phone
     },
     callbacks: {
-        finish: `${process.env.BASE_URL}/thanks`
-      }
+      finish: `${process.env.BASE_URL}/thanks?order_id=${trx.orderId}`
+    },
+    // Enable QRIS and other e-wallet payments
+    enabled_payments: [
+      'gopay', 'shopeepay', 'qris',
+      'bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va',
+      'credit_card', 'akulaku'
+    ]
   });
 
   await prisma.payment.upsert({

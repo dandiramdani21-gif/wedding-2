@@ -9,7 +9,8 @@ import { PaginationLinks } from '@/components/pagination-links';
 function statusBadge(status: string) {
   if (status === 'PENDING') return 'bg-amber-100 text-amber-700 ring-amber-200';
   if (status === 'PAID') return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
-  return 'bg-rose-100 text-rose-700 ring-rose-200';
+  if (status === 'FAILED' || status === 'EXPIRED') return 'bg-rose-100 text-rose-700 ring-rose-200';
+  return 'bg-slate-100 text-slate-700 ring-slate-200';
 }
 
 export default async function TransaksiPage({ searchParams }: { searchParams: { page?: string; pageSize?: string } }) {
@@ -143,6 +144,15 @@ export default async function TransaksiPage({ searchParams }: { searchParams: { 
                     >
                       <Wallet className="h-4 w-4" />
                       Bayar Sekarang
+                    </Link>
+                  )}
+                  {(row.status === 'FAILED' || row.status === 'EXPIRED') && (
+                    <Link
+                      href={`/api/midtrans/snap?transactionId=${row.id}`}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-white/18 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    >
+                      <Wallet className="h-4 w-4" />
+                      Bayar Sekarang (Lagi)
                     </Link>
                   )}
                 </div>
